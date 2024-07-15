@@ -1,7 +1,7 @@
 const { deployContract } = require('./utils')
 
 async function main() {
-  await deployContract('RewardDistributorFactory', [])
+  await deployContract('RewardV2DistributorFactory', [])
 }
 
 main()
