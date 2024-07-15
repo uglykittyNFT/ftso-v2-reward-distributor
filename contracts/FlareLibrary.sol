@@ -1,16 +1,8 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.17;
+pragma solidity 0.8.19;
 
-interface IPriceSubmitter {
-    function getFtsoManager() external view returns (address);
-}
-
-interface IFtsoManager {
-    function rewardManager() external view returns (address);
-}
-
-interface IFtsoRewardManager {
-    function wNat() external view returns (address);
+interface IFlareContractRegistry {
+    function getContractAddressByName(string calldata _name) external view returns(address);
 }
 
 interface IWNat {
@@ -18,9 +10,10 @@ interface IWNat {
 }
 
 library FlareLibrary {
-    IPriceSubmitter private constant priceSubmitter = IPriceSubmitter(0x1000000000000000000000000000000000000003);
+    IFlareContractRegistry private constant flareContractRegistry =
+        IFlareContractRegistry(0xaD67FE66660Fb8dFE9d6b1b4240d8650e30F6019);
 
     function getWNat() internal view returns (IWNat) {
-        return IWNat(IFtsoRewardManager(IFtsoManager(priceSubmitter.getFtsoManager()).rewardManager()).wNat());
+        return IWNat(flareContractRegistry.getContractAddressByName("WNat"));
     }
 }

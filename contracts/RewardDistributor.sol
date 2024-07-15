@@ -1,17 +1,14 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.17;
+pragma solidity 0.8.19;
 
 import "./interfaces/IRewardDistributor.sol";
 import "./FlareLibrary.sol";
 
 contract RewardDistributor is IRewardDistributor {
 
-    address payable public provider;
-    uint256 public reserveBalance;
+    Voter[] public voters;
     Recipient[] public recipients;
-
     address public owner;
-
     bool private locked;
 
     modifier lock() {
@@ -27,61 +24,52 @@ contract RewardDistributor is IRewardDistributor {
     }
 
     constructor(
-        address _provider,
-        uint256 _reserveBalance,
+        address[] memory _voters,
+        uint256[] memory _reserveBalances,
         address[] memory _recipients,
         uint256[] memory _bips,
         bool[] memory _wrap,
         address _owner
     ) {
-        require(_provider != address(0), "Invalid provider address");
+        require(_voters.length == _reserveBalances.length, "Voter ReserveBalances length mismatch");
         uint256 len = _recipients.length;
         require(_bips.length == len, "Bips length mismatch");
         require(_wrap.length == len, "Wrap length mismatch");
+
         owner = _owner;
-        provider = payable(_provider);
-        reserveBalance = _reserveBalance;
+
+        addVoters(_voters, _reserveBalances);
         addRecipients(_recipients, _bips, _wrap);
-    }
-
-    function addRecipients(address[] memory _recipients, uint256[] memory _bips, bool[] memory _wrap) private {
-        uint256 total;
-        for (uint256 i; i < _recipients.length; i++) {
-            Recipient storage recipient = recipients.push();
-            recipient.recipient = _recipients[i];
-            recipient.bips = _bips[i];
-            recipient.wrap = _wrap[i];
-            total += _bips[i];
-        }
-        require(total == 100_00, "Sum is not 100%");
-    }
-
-
-    function recipientsCount() external view returns (uint256) {
-        return recipients.length;
-    }
-
-    function recipientsAll() external view returns (Recipient[] memory) {
-        return recipients;
     }
 
     receive() external payable lock {
         uint256 remainingAmount = msg.value;
-        uint256 currentBalance = provider.balance;
         emit TotalRewards(block.timestamp, remainingAmount);
-        if (currentBalance < reserveBalance) {
-            uint256 refillAmount = reserveBalance - currentBalance;
-            if (refillAmount > remainingAmount) refillAmount = remainingAmount;
-            (bool success, ) = provider.call{value: refillAmount}("");
-            require(success, "Unable to refill provider's account");
-            emit Refill(refillAmount);
-            remainingAmount -= refillAmount;
+        uint256 currentBalance = 0;
+
+        // Top-up voters
+        for(uint256 i; i < voters.length; i++){
+            Voter storage v = voters[i];
+            uint256 reserveBalance = v.reserveBalance;
+            currentBalance = v.voter.balance;
+            if (currentBalance < reserveBalance) {
+                uint256 refillAmount = reserveBalance - currentBalance;
+                if (refillAmount > remainingAmount) refillAmount = remainingAmount;
+                (bool success, ) = v.voter.call{value: refillAmount}("");
+                require(success, "Unable to refill provider's account");
+                emit Refill(refillAmount);
+                remainingAmount -= refillAmount;
+            }
         }
+
+        // Distribute rewards to recipients
         if (remainingAmount > 0) {
             uint256 remainingBips = 100_00;
             for (uint256 i; i < recipients.length; i++) {
                 Recipient storage r = recipients[i];
-                uint256 shareAmount = (remainingBips == r.bips) ? remainingAmount : (remainingAmount * r.bips) / remainingBips;
+                uint256 shareAmount = (remainingBips == r.bips)
+                    ? remainingAmount
+                    : (remainingAmount * r.bips) / remainingBips;
                 if (r.wrap) {
                     FlareLibrary.getWNat().depositTo{value: shareAmount}(r.recipient);
                 } else {
@@ -99,16 +87,42 @@ contract RewardDistributor is IRewardDistributor {
         owner = _owner;
     }
 
-    function destroy() external onlyOwner {
-        selfdestruct(payable(owner));
+    function replaceVoters(address[] calldata _voters, uint256[] calldata _reserveBalances) external onlyOwner {
+        for (uint256 i = voters.length; i > 0; i--) voters.pop();
+        addVoters(_voters, _reserveBalances);
     }
 
-    function replaceReserveBalance(uint256 _reserveBalance) external onlyOwner {
-        reserveBalance = _reserveBalance;
-    }
-
-    function replaceRecipients(address[] calldata _recipients, uint256[] calldata _bips, bool[] calldata _wrap) external onlyOwner {
+    function replaceRecipients(address[] calldata _recipients, uint256[] calldata _bips, bool[] calldata _wrap)
+        external onlyOwner {
         for (uint256 i = recipients.length; i > 0; i--) recipients.pop();
         addRecipients(_recipients, _bips, _wrap);
+    }
+
+    function recipientsCount() external view returns (uint256) {
+        return recipients.length;
+    }
+
+    function recipientsAll() external view returns (Recipient[] memory) {
+        return recipients;
+    }
+
+    function addVoters(address[] memory _voters, uint256[] memory _reserveBalances) private {
+        for (uint256 i; i < _voters.length; i++) {
+            Voter storage voter = voters.push();
+            voter.voter = payable(_voters[i]);
+            voter.reserveBalance = _reserveBalances[i];
+        }
+    }
+
+    function addRecipients(address[] memory _recipients, uint256[] memory _bips, bool[] memory _wrap) private {
+        uint256 total;
+        for (uint256 i; i < _recipients.length; i++) {
+            Recipient storage recipient = recipients.push();
+            recipient.recipient = _recipients[i];
+            recipient.bips = _bips[i];
+            recipient.wrap = _wrap[i];
+            total += _bips[i];
+        }
+        require(total == 100_00, "Sum is not 100%");
     }
 }
