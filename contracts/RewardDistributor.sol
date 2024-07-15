@@ -56,8 +56,8 @@ contract RewardDistributor is IRewardDistributor {
                 uint256 refillAmount = reserveBalance - currentBalance;
                 if (refillAmount > remainingAmount) refillAmount = remainingAmount;
                 (bool success, ) = v.voter.call{value: refillAmount}("");
-                require(success, "Unable to refill provider's account");
-                emit Refill(refillAmount);
+                require(success, "Unable to refill voter's account");
+                emit Refill(v.voter, refillAmount);
                 remainingAmount -= refillAmount;
             }
         }

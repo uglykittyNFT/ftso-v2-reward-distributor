@@ -16,7 +16,7 @@ interface IRewardDistributor {
 
     event TotalRewards(uint256 timestamp, uint256 amount);
     event Reward(address indexed recipient, uint256 amount);
-    event Refill(uint256 amount);
+    event Refill(address indexed voter, uint256 amount);
 
     function replaceOwner(address _owner) external;
     function replaceVoters(address[] calldata _voters, uint256[] calldata _reserveBalances) external;
