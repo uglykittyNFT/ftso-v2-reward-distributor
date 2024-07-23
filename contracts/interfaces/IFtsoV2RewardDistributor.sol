@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.7.5;
+pragma solidity >=0.8.0;
 pragma abicoder v2;
 
-interface IRewardDistributor {
+interface IFtsoV2RewardDistributor {
     struct Recipient {
         address recipient;
         uint256 bips;
@@ -25,11 +25,4 @@ interface IRewardDistributor {
         uint256[] calldata _bips,
         bool[] calldata _wrap
     ) external;
-
-    // function identity() external view returns (address);
-    // function reserveBalances() external view returns (uint256[] memory);
-    // function recipients(uint256 i) external view returns (address recipient, uint256 bips, bool wrap);
-    // function recipientsCount() external view returns (uint256);
-    // function recipientsAll() external view returns (Recipient[] memory);
-    // function owner() external view returns (address);
 }

@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
-import "./interfaces/IRewardDistributorFactory.sol";
-import "./RewardDistributor.sol";
+import { IFtsoV2RewardDistributorFactory } from "./interfaces/IFtsoV2RewardDistributorFactory.sol";
+import { FtsoV2RewardDistributor } from "./FtsoV2RewardDistributor.sol";
 
-contract RewardDistributorFactory is IRewardDistributorFactory {
+contract FtsoV2RewardDistributorFactory is IFtsoV2RewardDistributorFactory {
 
     mapping(address => NamedInstance[]) private instances;
 
@@ -18,7 +18,7 @@ contract RewardDistributorFactory is IRewardDistributorFactory {
         string calldata description
     ) external returns (address instance) {
         instance = address(
-            new RewardDistributor(
+            new FtsoV2RewardDistributor(
                 voters,
                 reserveBalances,
                 recipients,

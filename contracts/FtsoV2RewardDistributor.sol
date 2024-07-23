@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
-import "./interfaces/IRewardDistributor.sol";
-import "./FlareLibrary.sol";
+import { IFtsoV2RewardDistributor } from "./interfaces/IFtsoV2RewardDistributor.sol";
+import { FlareLibrary } from "./FlareLibrary.sol";
 
-contract RewardDistributor is IRewardDistributor {
+contract FtsoV2RewardDistributor is IFtsoV2RewardDistributor {
 
     Voter[] public voters;
     Recipient[] public recipients;
@@ -31,7 +31,10 @@ contract RewardDistributor is IRewardDistributor {
         bool[] memory _wrap,
         address _owner
     ) {
-        require(_voters.length == _reserveBalances.length, "Voter ReserveBalances length mismatch");
+        require(
+            _voters.length == _reserveBalances.length,
+            "Voter ReserveBalances length mismatch"
+        );
         uint256 len = _recipients.length;
         require(_bips.length == len, "Bips length mismatch");
         require(_wrap.length == len, "Wrap length mismatch");
@@ -86,6 +89,10 @@ contract RewardDistributor is IRewardDistributor {
     function replaceOwner(address _owner) external onlyOwner {
         owner = _owner;
     }
+
+    // function destroy() external onlyOwner {
+    //     selfdestruct(payable(owner));
+    // }
 
     function replaceVoters(address[] calldata _voters, uint256[] calldata _reserveBalances) external onlyOwner {
         for (uint256 i = voters.length; i > 0; i--) voters.pop();
