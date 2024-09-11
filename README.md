@@ -23,6 +23,6 @@ The newly generated address has to be used as the `recipient` of the `RewardMana
 |----------| -------------------------------------------- |
 | Coston | [0x397e0558215fB67b2A250e1973b50461E5D4D03a](https://coston-explorer.flare.network/address/0x397e0558215fB67b2A250e1973b50461E5D4D03a) |
 | Songbird | [0x397e0558215fB67b2A250e1973b50461E5D4D03a](https://songbird-explorer.flare.network/address/0x397e0558215fB67b2A250e1973b50461E5D4D03a) |
-| Flare | [0x397e0558215fB67b2A250e1973b50461E5D4D03a](https://flare-explorer.flare.network/address/0x171eB1f854A7e542D88d6f6fb8827C83236C1937) |
+| Flare | [0x397e0558215fB67b2A250e1973b50461E5D4D03a](https://flare-explorer.flare.network/address/0x397e0558215fB67b2A250e1973b50461E5D4D03a) |
 
 <!-- | Coston2  | [0x171eB1f854A7e542D88d6f6fb8827C83236C1937](https://coston2-explorer.flare.network/address/0x171eB1f854A7e542D88d6f6fb8827C83236C1937) | -->
